@@ -23,6 +23,25 @@
 #include <linux/types.h>
 #include <linux/spi/spidev.h>
 
+//#include any h driver files
+#include "include/motors.h"
+#include "include/magnet.h"
+#include "include/pio.h"
+
+//Globals
+static int starting_board[8][8] = {
+	{1, 1, 1, 1, 1, 1, 1, 1},
+	{1, 1, 1, 1, 1, 1, 1, 1},
+	{0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0},
+	{1, 1, 1, 1, 1, 1, 1, 1},
+	{1, 1, 1, 1, 1, 1, 1, 1}
+};
+
+int current_board[8][8];
+
 
 //arguments could be how the game is set up.
 // have an argument for ai v ai.
@@ -32,21 +51,27 @@ int main(int argc, char *argv[])
 	printf("Welcome to NYGC.\n");
 
 	//main will have to run *forever
+	printf("Preparing to start game..\n");
+	memcpy(current_board, starting_board, sizeof(int) * 8 * 8);
+	setup_motors();
+	printf("Game started, entering infinite loop.\n");
 	while(1)
 	{
 		//whenever we send position data over bluetooth, we should
 		//print it out.
 		//whenever we receive data from bluetooth, we should print
-		//suggested data to send is the same type of string that
-		//chessboard.js uses. 
+		//we will be sending a/ multiple 2D arrays through bluetooth
 
 		//setup gpio's.
+		//setup_motors();
+		//setup_magnet();
+
 
 		//setup bluetooth to connect to phone
 
 		//start game
 			//check board for initial setup
-			
+			//move motors to home
 			//print out which players turn it is.
 
 			//poll for changes in capsense, need to keep the board
