@@ -16,6 +16,8 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
 #include <getopt.h>
 #include <fcntl.h>
 #include <sys/ioctl.h>
@@ -30,6 +32,11 @@
 //Globals
 int DEBUG = 0;
 //are pieces there or not?
+//A 1 2 3 4 5 6 7 8
+//B 1 2 3 4 5 6 7 8
+//C 1 2 3 4 5 6 7 8
+//D 1 2 3 4 5 6 7 8
+//....
 static int starting_board[8][8] = {
 	{1, 1, 1, 1, 1, 1, 1, 1},
 	{1, 1, 1, 1, 1, 1, 1, 1},
@@ -42,16 +49,7 @@ static int starting_board[8][8] = {
 };
 
 //give each piece type a value..what about black or white?
-static int starting_board1[8][8] = {
-	{12, 13, 14, 15, 16, 14, 13, 12},
-	{11, 11, 11, 11, 11, 11, 11, 11},
-	{30, 30, 30, 30, 30, 30, 30, 30},
-	{30, 30, 30, 30, 30, 30, 30, 30},
-	{30, 30, 30, 30, 30, 30, 30, 30},
-	{30, 30, 30, 30, 30, 30, 30, 30},
-	{21, 21, 21, 21, 21, 21, 21, 21},
-	{22, 23, 24, 26, 25, 24, 23, 22}
-};
+static int starting_board1[8] = {255, 255, 0, 0, 0, 0, 255, 255};
 
 //the board could also be represented as a string if need be...
 char starting_board2[] = "rkbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
@@ -59,12 +57,17 @@ char starting_board2[] = "rkbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
 int current_board[8][8];
 int current_x = 0;
 int current_y = 0;
+//not sure about this one;
+char incoming_data[2];
+char *parsed_data[2];
 
 
 void print_curr_loc();
 void print_board();
 void setup_bluetooth();
 void check_init();
+void parse_incoming_data();
+void move_piece();
 //arguments could be how the game is set up.
 // have an argument for ai v ai.
 // might need arguments to setup bluetooth
@@ -92,7 +95,7 @@ int main(int argc, char *argv[])
 	//************************************************************************
 
 	//Copy the starting board array to the current board.
-	memcpy(current_board, starting_board1, sizeof(int) * 8 * 8);
+	memcpy(current_board, starting_board, sizeof(int) * 8 * 8);
 
 	//Ask the user to make sure the motors are in the correct corners..not sure which yet.
 	if(!DEBUG){
@@ -121,8 +124,17 @@ int main(int argc, char *argv[])
 				scanf("%s", &input);
 				int help = strcmp(input, "help");
 				int cont = strcmp(input, "continue");
+				int parse_data = strcmp(input, "move");
 				if(!help){
-					printf("HELP: \n\nAdd list of debug commands here\n\n");
+					printf("HELP: \n\n\thelp - show this help screen\n\tcontinue - allows the board do loop through again\n\tparse - show parsed data (a1->b1)\n\n");
+				}
+				if(!parse_data){
+					char a[6];
+					printf("enter 2 numbers (ex: 10->20): ");
+					scanf("%s", a);
+					char in[] = "11->21";
+					parse_incoming_data(a);
+					move_piece();
 				}
 				if(!cont){
 				}
@@ -156,6 +168,7 @@ int main(int argc, char *argv[])
 			//once there is a change in capsense, send it to server
 
 			//wait for response from server with AI/user move
+			//parse_incoming_data(DATA_FROM_BLUETOOTH);
 
 			//do it all over again. Let the server handle bad moves
 			//etc.
@@ -173,6 +186,33 @@ int main(int argc, char *argv[])
 //****************************************************************
 //EXTRA FUNCTIONS
 //****************************************************************
+
+void parse_incoming_data(char string[]){
+	int i = 0;
+	printf("incoming string: %s\n", string);
+	char *parse = strtok(string, "->");
+	while (parse != NULL){
+		parsed_data[i++] = parse;
+		parse = strtok(NULL, "->");
+	}
+	printf("\nMove from %s to %s\n\n", parsed_data[0], parsed_data[1]);
+
+
+	
+}
+
+void move_piece(){
+	int x1 = parsed_data[0][0] - '0' - 1;
+	int y1 = parsed_data[0][1] - '0' - 1;
+	int x2 = parsed_data[1][0] - '0' - 1;
+	int y2 = parsed_data[1][1] - '0' - 1;
+
+	current_board[x1][y1] = 0;
+	current_board[x2][y2] = 1;
+
+	print_board();
+}
+
 void print_curr_loc()
 {
 	printf("Current Location in Steps: X: %d, Y: %d\n", current_x, current_y);
@@ -183,7 +223,9 @@ void print_board()
 {
 	int i = 0;
 	int j = 0;
+	printf("   1 2 3 4 5 6 7 8\n\n");
 	for(i; i < 8; i++){
+		printf("%d  ", i + 1);
 		for(j; j < 8; j++){
 			printf("%d ", current_board[i][j]);
 		}
