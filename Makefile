@@ -3,7 +3,7 @@ FILENAME=nygc_2016
 CC=gcc
 IDIR =include
 CFLAGS=-I $(IDIR)
-LIBS=
+LIBS=m
 ODIR=obj
 
 DRV_FILES := $(wildcard drivers/*.c)
@@ -16,7 +16,7 @@ _OBJ = $(FILENAME).o
 OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
 $(FILENAME): $(DOBJ_FILES) $(OBJ)
-	$(CC) -o game.out $^ $(CFLAGS) $(LIBS)
+	$(CC) -o game.out $^ $(CFLAGS) -l$(LIBS)
 
 $(ODIR)/%.o: %.c $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS)

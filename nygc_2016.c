@@ -15,6 +15,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <math.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
@@ -57,6 +58,7 @@ char starting_board2[] = "rkbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
 int current_board[8][8];
 int current_x = 0;
 int current_y = 0;
+int packaged_data[8];
 //not sure about this one;
 char incoming_data[2];
 char *parsed_data[2];
@@ -68,6 +70,7 @@ void setup_bluetooth();
 void check_init();
 void parse_incoming_data();
 void move_piece();
+void package_board();
 //arguments could be how the game is set up.
 // have an argument for ai v ai.
 // might need arguments to setup bluetooth
@@ -107,10 +110,10 @@ int main(int argc, char *argv[])
 	//if the user says "Y" Then lets get this show on the road!
 	if( a == 'Y'){
 		printf("\n");
+		printf("Game started, entering infinite loop. Ctrl + C to quit.\n");
+		package_board();
 		print_curr_loc();
 		print_board();
-		printf("Game started, entering infinite loop. Ctrl + C to quit.\n");
-
 
 		//*********************************************************************
 		//GAME LOOP
@@ -124,11 +127,11 @@ int main(int argc, char *argv[])
 				scanf("%s", &input);
 				int help = strcmp(input, "help");
 				int cont = strcmp(input, "continue");
-				int parse_data = strcmp(input, "move");
+				int move = strcmp(input, "move");
 				if(!help){
-					printf("HELP: \n\n\thelp - show this help screen\n\tcontinue - allows the board do loop through again\n\tparse - show parsed data (a1->b1)\n\n");
+					printf("HELP: \n\n\thelp - show this help screen\n\tcontinue - allows the board do loop through again\n\tmove - move a board piece\n\n");
 				}
-				if(!parse_data){
+				if(!move){
 					char a[6];
 					printf("enter 2 numbers (ex: 10->20): ");
 					scanf("%s", a);
@@ -210,7 +213,29 @@ void move_piece(){
 	current_board[x1][y1] = 0;
 	current_board[x2][y2] = 1;
 
+	package_board();
+	print_curr_loc();
 	print_board();
+}
+
+void package_board(){
+	int i = 0;
+	int j = 7;
+	int z = 0;
+	int package;
+	printf("Package: \n");
+	for(i; i < 8; i++){
+		package = 0;
+		j = 7;
+		z = 0;
+		for(j; j > -1; j--){
+			if(current_board[i][z]){
+				package += pow(2,j);
+			}
+			z++;
+		}
+		packaged_data[i] = package;
+	}
 }
 
 void print_curr_loc()
@@ -223,6 +248,7 @@ void print_board()
 {
 	int i = 0;
 	int j = 0;
+	int z = 0;
 	printf("   1 2 3 4 5 6 7 8\n\n");
 	for(i; i < 8; i++){
 		printf("%d  ", i + 1);
@@ -232,6 +258,13 @@ void print_board()
 		printf("\n");
 		j = 0;
 	}
+	
+	printf("\nPackaged data: ");
+	for(z; z < 8; z++){
+		printf("%d, ", packaged_data[z]);
+	}
+	printf("\n");
+
 }
 
 void setup_bluetooth()
