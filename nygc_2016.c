@@ -56,14 +56,16 @@ static int starting_board1[8] = {255, 255, 0, 0, 0, 0, 255, 255};
 char starting_board2[] = "rkbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
 
 int current_board[8][8];
+int prev_board[8][8];
 int current_x = 0;
 int current_y = 0;
+int turn = 0; //0 is waiting for phone, 1 is waiting for board.
 int packaged_data[8];
 //not sure about this one;
 char incoming_data[2];
 char *parsed_data[2];
 
-
+void get_board();
 void print_curr_loc();
 void print_board();
 void setup_bluetooth();
@@ -71,6 +73,7 @@ void check_init();
 void parse_incoming_data();
 void move_piece();
 void package_board();
+int compare_boards();
 //arguments could be how the game is set up.
 // have an argument for ai v ai.
 // might need arguments to setup bluetooth
@@ -99,6 +102,7 @@ int main(int argc, char *argv[])
 
 	//Copy the starting board array to the current board.
 	memcpy(current_board, starting_board, sizeof(int) * 8 * 8);
+	memcpy(prev_board, current_board, sizeof(int) * 8 * 8);
 
 	//Ask the user to make sure the motors are in the correct corners..not sure which yet.
 	if(!DEBUG){
@@ -111,6 +115,7 @@ int main(int argc, char *argv[])
 	if( a == 'Y'){
 		printf("\n");
 		printf("Game started, entering infinite loop. Ctrl + C to quit.\n");
+		printf("It is the Phone's Turn!\n");
 		package_board();
 		print_curr_loc();
 		print_board();
@@ -139,6 +144,7 @@ int main(int argc, char *argv[])
 					char in[] = "11->21";
 					parse_incoming_data(a);
 					move_piece();
+					turn = 1;
 				}
 				if(!motor){
 					move_steps(20, 1, 1);
@@ -149,31 +155,31 @@ int main(int argc, char *argv[])
 
 			}
 
-		//whenever we send position data over bluetooth, we should
-		//print it out.
-		//whenever we receive data from bluetooth, we should print
-		//we will be sending a/ multiple 2D arrays through bluetooth
-
-		//setup gpio's.
-		//setup_motors();
-		//setup_magnet();
-
-
-		//setup bluetooth to connect to phone
-
-		//start game
-			//check board for initial setup
-			//move motors to home
-			//print out which players turn it is.
 
 			//poll for changes in capsense, need to keep the board
 			//in software so we know which pieces are moved.
 			//a 2-d array of booleans should work just fine.
-			//then have a function that converts the 2d array to 
-			//chessboard.js string. Or maybe have a 2d array for
-			//each piece type.
 
-			//once there is a change in capsense, send it to server
+			//compare current capsense with next capsense
+			//waiting on the board to move
+			if(turn){
+				printf("It is the Board's turn!\n");
+				if(compare_boards(current_board, prev_board)){
+					printf("Boards are the same!\n");
+				} else {
+					printf("Boards are NOT the same!\n");
+					//This means a piece moved!
+					memcpy(prev_board, current_board, sizeof(int) * 8 * 8);
+					//send board to phone
+
+				}
+			} 
+			//waiting for return data from bluetooth
+			else {
+				printf("It is the Phone's turn!\n");
+
+			}
+
 
 			//wait for response from server with AI/user move
 			//parse_incoming_data(DATA_FROM_BLUETOOTH);
@@ -194,6 +200,26 @@ int main(int argc, char *argv[])
 //****************************************************************
 //EXTRA FUNCTIONS
 //****************************************************************
+
+int compare_boards(int curr[8][8], int prev[8][8]){
+	int i = 0;
+	int j = 0;
+	int diff = 0;
+	for(i; i < 8; i++){
+		for(j; j < 8; j++){
+			if(curr[i][j] != prev[i][j]){
+				diff = 1;
+				return !diff;
+			}
+		}
+		j = 0;
+	}
+	return !diff;
+}
+
+//get the board from capsense
+void get_board(){
+}
 
 void parse_incoming_data(char string[]){
 	int i = 0;
@@ -228,7 +254,6 @@ void package_board(){
 	int j = 7;
 	int z = 0;
 	int package;
-	printf("Package: \n");
 	for(i; i < 8; i++){
 		package = 0;
 		j = 7;
