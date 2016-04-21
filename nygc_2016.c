@@ -128,6 +128,7 @@ int main(int argc, char *argv[])
 				int help = strcmp(input, "help");
 				int cont = strcmp(input, "continue");
 				int move = strcmp(input, "move");
+				int motor = strcmp(input, "motor");
 				if(!help){
 					printf("HELP: \n\n\thelp - show this help screen\n\tcontinue - allows the board do loop through again\n\tmove - move a board piece\n\n");
 				}
@@ -138,6 +139,10 @@ int main(int argc, char *argv[])
 					char in[] = "11->21";
 					parse_incoming_data(a);
 					move_piece();
+				}
+				if(!motor){
+					move_steps(20, 1, 1);
+					move_steps(20, 1, 0);
 				}
 				if(!cont){
 				}

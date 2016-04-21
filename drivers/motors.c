@@ -19,10 +19,10 @@ static int GPIO_OUT = 0;
 //TODO
 static int MOTOR_1 = 0;
 static int MOTOR_2 = 1;
-static int MOTOR_1_STEP = 0;
-static int MOTOR_1_DIR = 0;
-static int MOTOR_2_STEP = 0;
-static int MOTOR_2_DIR = 0;
+static int MOTOR_1_STEP = 1;
+static int MOTOR_1_DIR = 3;
+static int MOTOR_2_STEP = 9;
+static int MOTOR_2_DIR = 11;
 
 void setup_motors()
 {
