@@ -147,8 +147,8 @@ int main(int argc, char *argv[])
 					turn = 1;
 				}
 				if(!motor){
-					move_steps(20, 1, 1);
-					move_steps(20, 1, 0);
+					move_steps(100, 100, 1, 1);
+					//move_steps(100, 100, 1 ,1);
 				}
 				if(!cont){
 				}

@@ -16,7 +16,7 @@ void setup_motors();
 //****************************************************
 // Move the motor a certain number of steps
 // ***************************************************
-void move_steps(int steps, int dir, int motor);
+void move_steps(int steps_x, int steps_y, int dir_x, int dir_y);
 
 //****************************************************
 // Move to a location, currently set as step location,
